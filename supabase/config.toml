@@ -1,0 +1,4 @@
+project_id = "wijyapsftwhsbechzzjs"
+
+[functions.agri-ai]
+verify_jwt = false
