@@ -115,35 +115,76 @@ Be specific and practical for Indian farmers.`,
         },
       ];
     } else if (type === "weather") {
+      // Fetch real weather data from Open-Meteo (free, no API key needed)
+      let weatherData = "";
+      try {
+        // First geocode the location
+        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=en&format=json`);
+        const geoData = await geoRes.json();
+        if (geoData.results && geoData.results.length > 0) {
+          const { latitude, longitude, name, admin1 } = geoData.results[0];
+          const weatherRes = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max&timezone=Asia%2FKolkata&forecast_days=7`
+          );
+          const wd = await weatherRes.json();
+          weatherData = `Location: ${name}, ${admin1}\nLatitude: ${latitude}, Longitude: ${longitude}\n\nCurrent Weather:\n- Temperature: ${wd.current?.temperature_2m}°C\n- Humidity: ${wd.current?.relative_humidity_2m}%\n- Wind Speed: ${wd.current?.wind_speed_10m} km/h\n- Weather Code: ${wd.current?.weather_code}\n\n7-Day Forecast:\n`;
+          if (wd.daily) {
+            for (let i = 0; i < wd.daily.time.length; i++) {
+              weatherData += `${wd.daily.time[i]}: High ${wd.daily.temperature_2m_max[i]}°C, Low ${wd.daily.temperature_2m_min[i]}°C, Rain ${wd.daily.precipitation_sum[i]}mm, Wind ${wd.daily.wind_speed_10m_max[i]}km/h\n`;
+            }
+          }
+        } else {
+          weatherData = `Could not find coordinates for "${location}". Using general knowledge.`;
+        }
+      } catch (e) {
+        console.error("Weather API error:", e);
+        weatherData = `Weather API unavailable. Using general knowledge for ${location}.`;
+      }
+
       aiMessages = [
         {
           role: "system",
-          content: `You are an agricultural weather advisor for Indian farmers. Respond in ${langName}. Provide a 5-day weather forecast for the given location with:
-## Current Weather (estimated)
-- Temperature, Humidity, Wind
-## 5-Day Forecast
-## Agricultural Advisory
-- Best days for sowing/harvesting
-- Irrigation recommendations
-- Pest risk based on weather
-## Crop-Specific Tips
-Be practical and helpful. Use approximate data based on typical weather patterns for the region and season (current month: ${new Date().toLocaleString("en", { month: "long" })}).`,
+          content: `You are an agricultural weather advisor for Indian farmers. Respond in ${langName}. You have REAL weather data below. Use this actual data to provide accurate advice.
+
+REAL WEATHER DATA:
+${weatherData}
+
+Format your response as:
+## 🌤️ Current Weather
+Show actual current conditions from the data above.
+## 📅 7-Day Forecast
+Present the daily forecast in a simple table or list using the real data.
+## 🌾 Agricultural Advisory
+- Best days for sowing/harvesting based on actual rain forecast
+- Irrigation recommendations based on actual precipitation
+- Pest/disease risk based on actual humidity and temperature
+## 💡 Crop-Specific Tips
+Practical tips based on the actual weather conditions.
+
+Be accurate — use the real numbers from the data. Be practical and farmer-friendly.`,
         },
-        { role: "user", content: `Weather forecast for: ${location}` },
+        { role: "user", content: `Weather forecast and farming advice for: ${location}` },
       ];
     } else if (type === "chat") {
       aiMessages = [
         {
           role: "system",
-          content: `You are AgriGuide AI, an expert agricultural assistant for Indian farmers. Respond in ${langName}. You help with:
+          content: `You are AgriGuide AI, an expert agricultural assistant for Indian farmers. 
+
+LANGUAGE INSTRUCTION: The user may speak in Hindi, Punjabi, English, or a mix of languages (Hinglish, Punglish). You MUST detect the language the user is speaking and respond in the SAME language. If the user writes in Hindi (Devanagari script), respond in Hindi. If in Punjabi (Gurmukhi script), respond in Punjabi. If in English, respond in English. If they mix languages, respond in the language they use most.
+
+The preferred language setting is: ${langName}. If the user's message language is unclear, default to ${langName}.
+
+You help with:
 - Soil health and fertilizer recommendations
-- Crop selection and management
+- Crop selection and management  
 - Pest and disease identification
 - Weather-based farming advice
 - Organic farming techniques
-- Government schemes for farmers
-- Market prices and selling strategies
-Be concise, practical, and use simple language that farmers can understand. Use bullet points and emojis for clarity.`,
+- Government schemes for farmers (PM-KISAN, Fasal Bima Yojana, etc.)
+- Market prices and selling strategies (mandi prices)
+- Water management and irrigation
+Be concise, practical, and use simple language that farmers can understand. Use bullet points and emojis for clarity. Give specific quantities, timings, and actionable steps.`,
         },
         ...messages,
       ];

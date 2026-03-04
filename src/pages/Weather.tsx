@@ -37,18 +37,18 @@ export default function WeatherPage() {
 
       <form onSubmit={handleFetch} className="space-y-4 mb-6">
         <div>
-          <label className="agri-label">Location / District</label>
+          <label className="agri-label">{lang === "hi" ? "स्थान / जिला" : lang === "pa" ? "ਸਥਾਨ / ਜ਼ਿਲ੍ਹਾ" : "Location / District"}</label>
           <input
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             className="agri-input"
-            placeholder="e.g. Ludhiana, Punjab"
+            placeholder={lang === "hi" ? "जैसे: लुधियाना, पंजाब" : lang === "pa" ? "ਜਿਵੇਂ: ਲੁਧਿਆਣਾ, ਪੰਜਾਬ" : "e.g. Ludhiana, Punjab"}
             required
           />
         </div>
-        <motion.button whileTap={{ scale: 0.97 }} type="submit" disabled={loading} className="agri-btn-primary w-full">
+        <motion.button whileTap={{ scale: 0.97 }} type="submit" disabled={loading} className="agri-btn-primary w-full flex items-center justify-center gap-2">
           {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <CloudSun className="h-5 w-5" />}
-          {t("weather")}
+          {loading ? (lang === "hi" ? "लोड हो रहा है..." : lang === "pa" ? "ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ..." : "Loading...") : t("weather")}
         </motion.button>
       </form>
 
