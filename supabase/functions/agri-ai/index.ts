@@ -12,13 +12,87 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const { type, messages, image, location, lang } = await req.json();
+    const { type, messages, image, location, lang, soilData, question } = await req.json();
 
     const langName = lang === "hi" ? "Hindi" : lang === "pa" ? "Punjabi" : "English";
 
     let aiMessages: { role: string; content: any }[] = [];
+    let useToolCalling = false;
+    let tools: any[] | undefined;
+    let toolChoice: any | undefined;
 
-    if (type === "pest-scan") {
+    if (type === "soil-card-extract") {
+      useToolCalling = true;
+      tools = [{
+        type: "function",
+        function: {
+          name: "extract_soil_params",
+          description: "Extract soil health parameters from a soil test report image/document",
+          parameters: {
+            type: "object",
+            properties: {
+              params: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    name: { type: "string", description: "Parameter name" },
+                    value: { type: "string", description: "Extracted value with unit" },
+                    idealRange: { type: "string", description: "Ideal range for agriculture e.g. 240-480" },
+                    status: { type: "string", enum: ["low", "medium", "high"], description: "Whether value is low, medium/normal, or high" }
+                  },
+                  required: ["name", "value", "idealRange", "status"],
+                  additionalProperties: false
+                }
+              }
+            },
+            required: ["params"],
+            additionalProperties: false
+          }
+        }
+      }];
+      toolChoice = { type: "function", function: { name: "extract_soil_params" } };
+      aiMessages = [
+        {
+          role: "system",
+          content: `You are an expert soil scientist. Extract ALL soil health parameters from the uploaded soil test report. Include Nitrogen, Phosphorus, Potassium, pH, Organic Carbon, Electrical Conductivity, and any micronutrients (Zn, Fe, Mn, Cu) if visible. Also identify soil type if mentioned. Respond with parameter names in ${langName}. Use standard agricultural ideal ranges for Indian soils.`,
+        },
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Extract all soil parameters from this soil health card:" },
+            { type: "image_url", image_url: { url: image } },
+          ],
+        },
+      ];
+    } else if (type === "soil-recommendations") {
+      aiMessages = [
+        {
+          role: "system",
+          content: `You are an expert agricultural soil advisor for Indian farmers. Respond in ${langName}. Based on the soil data provided, give comprehensive recommendations:
+## Suitable Crops
+List 5-8 crops that would grow well in this soil.
+## Fertilizer Recommendation
+Specific fertilizers with quantities per acre.
+## Soil Improvement Suggestions
+Practical steps to improve soil health.
+## Nutrient Deficiency Solutions
+Address any deficiencies found.
+## Organic Alternatives
+Suggest organic methods for soil improvement.
+Be specific, practical, and use simple farmer-friendly language.`,
+        },
+        { role: "user", content: `My soil test results:\n${soilData}` },
+      ];
+    } else if (type === "soil-ask") {
+      aiMessages = [
+        {
+          role: "system",
+          content: `You are AgriGuide AI, an expert soil health advisor for Indian farmers. Respond in ${langName}. The farmer has the following soil data:\n${soilData}\n\nAnswer their question based on this soil data. Be specific, practical, and use simple language. Provide actionable advice.`,
+        },
+        { role: "user", content: question },
+      ];
+    } else if (type === "pest-scan") {
       aiMessages = [
         {
           role: "system",
@@ -77,16 +151,22 @@ Be concise, practical, and use simple language that farmers can understand. Use 
       throw new Error("Invalid request type");
     }
 
+    const body: any = {
+      model: "google/gemini-3-flash-preview",
+      messages: aiMessages,
+    };
+    if (useToolCalling && tools) {
+      body.tools = tools;
+      body.tool_choice = toolChoice;
+    }
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: aiMessages,
-      }),
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {
@@ -106,6 +186,18 @@ Be concise, practical, and use simple language that farmers can understand. Use 
     }
 
     const data = await response.json();
+
+    // Handle tool calling response for soil-card-extract
+    if (useToolCalling) {
+      const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+      if (toolCall?.function?.arguments) {
+        const parsed = JSON.parse(toolCall.function.arguments);
+        return new Response(JSON.stringify(parsed), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     const result = data.choices?.[0]?.message?.content || "No response generated.";
 
     return new Response(JSON.stringify({ result }), {

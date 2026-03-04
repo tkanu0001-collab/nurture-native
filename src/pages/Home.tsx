@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 
 const menuItems = [
-  { key: "uploadSoilReport", icon: Upload, path: "/soil-data", color: "bg-primary/10 text-primary" },
+  { key: "uploadSoilReport", icon: Upload, path: "/soil-health-card", color: "bg-primary/10 text-primary" },
   { key: "enterSoilData", icon: FileInput, path: "/soil-data", color: "bg-agri-earth-light text-agri-earth" },
   { key: "pestDiseaseScan", icon: Bug, path: "/pest-scan", color: "bg-destructive/10 text-destructive" },
   { key: "soilHistory", icon: History, path: "/soil-history", color: "bg-agri-sky-light text-agri-sky" },
