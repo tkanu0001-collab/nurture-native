@@ -24,18 +24,35 @@ export default function VoicePage() {
   const startListening = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert("Speech recognition not supported in this browser.");
+      alert("Speech recognition not supported in this browser. Please use Chrome.");
       return;
     }
     const recognition = new SpeechRecognition();
-    recognition.lang = lang === "hi" ? "hi-IN" : lang === "pa" ? "pa-IN" : "en-US";
-    recognition.interimResults = false;
+    // Support regional languages properly
+    const langMap: Record<string, string> = { hi: "hi-IN", pa: "pa-IN", en: "en-IN" };
+    recognition.lang = langMap[lang] || "en-IN";
+    recognition.interimResults = true;
+    recognition.continuous = false;
+    recognition.maxAlternatives = 1;
+    
     recognition.onresult = (event: any) => {
-      const text = event.results[0][0].transcript;
-      setInput(text);
+      let transcript = "";
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      setInput(transcript);
+      // Auto-send when speech is final
+      if (event.results[event.results.length - 1].isFinal) {
+        setListening(false);
+        if (transcript.trim()) {
+          setTimeout(() => sendMessage(transcript.trim()), 300);
+        }
+      }
+    };
+    recognition.onerror = (e: any) => {
+      console.error("Speech error:", e.error);
       setListening(false);
     };
-    recognition.onerror = () => setListening(false);
     recognition.onend = () => setListening(false);
     recognition.start();
     recognitionRef.current = recognition;
