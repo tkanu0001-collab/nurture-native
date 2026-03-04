@@ -7,6 +7,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import SoilData from "./pages/SoilData";
+import SoilHealthCard from "./pages/SoilHealthCard";
 import SoilHistory from "./pages/SoilHistory";
 import PestScan from "./pages/PestScan";
 import Weather from "./pages/Weather";
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/" element={<Login />} />
             <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
             <Route path="/soil-data" element={<ProtectedRoute><SoilData /></ProtectedRoute>} />
+            <Route path="/soil-health-card" element={<ProtectedRoute><SoilHealthCard /></ProtectedRoute>} />
             <Route path="/soil-history" element={<ProtectedRoute><SoilHistory /></ProtectedRoute>} />
             <Route path="/pest-scan" element={<ProtectedRoute><PestScan /></ProtectedRoute>} />
             <Route path="/weather" element={<ProtectedRoute><Weather /></ProtectedRoute>} />
