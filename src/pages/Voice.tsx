@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Mic, MicOff, Send, Loader2, Bot, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   role: "user" | "assistant";
@@ -14,6 +15,7 @@ interface Message {
 
 export default function VoicePage() {
   const { t, lang } = useLanguage();
+  const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,11 +26,10 @@ export default function VoicePage() {
   const startListening = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert("Speech recognition not supported in this browser. Please use Chrome.");
+      toast({ title: t("errorOccurred"), description: "Speech recognition not supported. Please use Chrome.", variant: "destructive" });
       return;
     }
     const recognition = new SpeechRecognition();
-    // Support regional languages properly
     const langMap: Record<string, string> = { hi: "hi-IN", pa: "pa-IN", en: "en-IN" };
     recognition.lang = langMap[lang] || "en-IN";
     recognition.interimResults = true;
@@ -41,7 +42,6 @@ export default function VoicePage() {
         transcript += event.results[i][0].transcript;
       }
       setInput(transcript);
-      // Auto-send when speech is final
       if (event.results[event.results.length - 1].isFinal) {
         setListening(false);
         if (transcript.trim()) {
@@ -84,7 +84,8 @@ export default function VoicePage() {
       if (error) throw error;
       setMessages([...newMsgs, { role: "assistant", content: data?.result || "No response." }]);
     } catch (err: any) {
-      setMessages([...newMsgs, { role: "assistant", content: "Error: " + (err.message || "Failed") }]);
+      toast({ title: t("errorOccurred"), description: err.message, variant: "destructive" });
+      setMessages([...newMsgs, { role: "assistant", content: t("errorOccurred") }]);
     } finally {
       setLoading(false);
       setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
@@ -137,7 +138,7 @@ export default function VoicePage() {
         {loading && (
           <div className="flex items-center gap-2 text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
-            <span className="text-sm font-display">Thinking...</span>
+            <span className="text-sm font-display">{t("thinking")}</span>
           </div>
         )}
         <div ref={bottomRef} />
@@ -149,7 +150,7 @@ export default function VoicePage() {
           <button
             onClick={listening ? stopListening : startListening}
             className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors ${
-              listening ? "bg-destructive text-destructive-foreground animate-pulse-green" : "bg-secondary text-secondary-foreground"
+              listening ? "bg-destructive text-destructive-foreground animate-pulse" : "bg-secondary text-secondary-foreground"
             }`}
           >
             {listening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}

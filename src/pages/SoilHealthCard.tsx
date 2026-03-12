@@ -5,9 +5,10 @@ import AppFooter from "@/components/AppFooter";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
+import { useToast } from "@/hooks/use-toast";
 import {
   Upload, FileText, Loader2, Sprout, MessageSquare, Send,
-  AlertTriangle, CheckCircle, MinusCircle, ChevronDown, ChevronUp,
+  AlertTriangle, CheckCircle, ChevronDown, ChevronUp,
 } from "lucide-react";
 
 interface SoilParam {
@@ -19,6 +20,7 @@ interface SoilParam {
 
 export default function SoilHealthCard() {
   const { t, lang: language } = useLanguage();
+  const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [extracting, setExtracting] = useState(false);
   const [soilParams, setSoilParams] = useState<SoilParam[]>([]);
@@ -52,22 +54,24 @@ export default function SoilHealthCard() {
     setRecommendations("");
 
     try {
-      // Convert file to base64
-      const reader = new FileReader();
-      reader.onload = async () => {
-        const base64 = reader.result as string;
-        const { data, error } = await supabase.functions.invoke("agri-ai", {
-          body: { type: "soil-card-extract", image: base64, lang: language },
-        });
-        if (error) throw error;
-        if (data?.params) {
-          setSoilParams(data.params);
-        }
-        setExtracting(false);
-      };
-      reader.readAsDataURL(file);
-    } catch (err) {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(new Error("Failed to read file"));
+        reader.readAsDataURL(file);
+      });
+
+      const { data, error } = await supabase.functions.invoke("agri-ai", {
+        body: { type: "soil-card-extract", image: base64, lang: language },
+      });
+      if (error) throw error;
+      if (data?.params) {
+        setSoilParams(data.params);
+      }
+    } catch (err: any) {
       console.error(err);
+      toast({ title: t("uploadError"), description: err.message, variant: "destructive" });
+    } finally {
       setExtracting(false);
     }
   };
@@ -92,6 +96,12 @@ export default function SoilHealthCard() {
     addParam(t("manganese"), manualMn, "2.0-5.0");
     addParam(t("copper"), manualCu, "0.2-1.0");
     if (manualSoilType) params.push({ name: t("soilType"), value: manualSoilType, idealRange: "-", status: "medium" });
+    
+    if (params.length === 0) {
+      toast({ title: t("errorOccurred"), description: "Please enter at least one soil parameter.", variant: "destructive" });
+      return;
+    }
+    
     setSoilParams(params);
     setShowManual(false);
   };
@@ -106,8 +116,8 @@ export default function SoilHealthCard() {
       });
       if (error) throw error;
       setRecommendations(data?.result || "");
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      toast({ title: t("errorOccurred"), description: err.message, variant: "destructive" });
     }
     setLoadingRec(false);
   };
@@ -127,8 +137,8 @@ export default function SoilHealthCard() {
       });
       if (error) throw error;
       setAskAnswer(data?.result || "");
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      toast({ title: t("errorOccurred"), description: err.message, variant: "destructive" });
     }
     setAskLoading(false);
   };

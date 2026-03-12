@@ -32,7 +32,7 @@ export default function SoilHistoryPage() {
 
       {records.length === 0 ? (
         <div className="text-center text-muted-foreground py-20 font-display">
-          No records yet. Analyze your soil first!
+          {t("noRecords")}
         </div>
       ) : (
         <div className="space-y-4">
@@ -49,7 +49,7 @@ export default function SoilHistoryPage() {
                   {new Date(r.date).toLocaleDateString()}
                 </span>
                 <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-display font-bold text-secondary-foreground capitalize">
-                  {r.data.crop}
+                  {t(r.data.crop)}
                 </span>
               </div>
               <div className="flex items-center gap-4">

@@ -90,6 +90,12 @@ export const translations: Record<Language, Record<string, string>> = {
     cotton: "Cotton",
     sugarcane: "Sugarcane",
     mustard: "Mustard",
+    retake: "Retake",
+    takePhoto: "Take a photo of the affected plant leaf or fruit",
+    noRecords: "No records yet. Analyze your soil first!",
+    thinking: "Thinking...",
+    errorOccurred: "Something went wrong. Please try again.",
+    uploadError: "Failed to process the uploaded file.",
   },
   hi: {
     appName: "एग्रीगाइड",
@@ -180,6 +186,12 @@ export const translations: Record<Language, Record<string, string>> = {
     cotton: "कपास",
     sugarcane: "गन्ना",
     mustard: "सरसों",
+    retake: "दोबारा लें",
+    takePhoto: "प्रभावित पौधे की पत्ती या फल की फोटो लें",
+    noRecords: "अभी तक कोई रिकॉर्ड नहीं। पहले अपनी मिट्टी का विश्लेषण करें!",
+    thinking: "सोच रहा है...",
+    errorOccurred: "कुछ गलत हो गया। कृपया पुनः प्रयास करें।",
+    uploadError: "अपलोड की गई फ़ाइल प्रोसेस करने में विफल।",
   },
   pa: {
     appName: "ਐਗਰੀਗਾਈਡ",
@@ -270,6 +282,12 @@ export const translations: Record<Language, Record<string, string>> = {
     cotton: "ਕਪਾਹ",
     sugarcane: "ਗੰਨਾ",
     mustard: "ਸਰ੍ਹੋਂ",
+    retake: "ਦੁਬਾਰਾ ਲਓ",
+    takePhoto: "ਪ੍ਰਭਾਵਿਤ ਪੌਦੇ ਦੇ ਪੱਤੇ ਜਾਂ ਫਲ ਦੀ ਫੋਟੋ ਲਓ",
+    noRecords: "ਅਜੇ ਕੋਈ ਰਿਕਾਰਡ ਨਹੀਂ। ਪਹਿਲਾਂ ਆਪਣੀ ਮਿੱਟੀ ਦਾ ਵਿਸ਼ਲੇਸ਼ਣ ਕਰੋ!",
+    thinking: "ਸੋਚ ਰਿਹਾ ਹੈ...",
+    errorOccurred: "ਕੁਝ ਗਲਤ ਹੋ ਗਿਆ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+    uploadError: "ਅੱਪਲੋਡ ਕੀਤੀ ਫ਼ਾਈਲ ਨੂੰ ਪ੍ਰੋਸੈਸ ਕਰਨ ਵਿੱਚ ਅਸਫਲ।",
   },
 };
 
