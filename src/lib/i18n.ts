@@ -186,6 +186,12 @@ export const translations: Record<Language, Record<string, string>> = {
     cotton: "कपास",
     sugarcane: "गन्ना",
     mustard: "सरसों",
+    retake: "दोबारा लें",
+    takePhoto: "प्रभावित पौधे की पत्ती या फल की फोटो लें",
+    noRecords: "अभी तक कोई रिकॉर्ड नहीं। पहले अपनी मिट्टी का विश्लेषण करें!",
+    thinking: "सोच रहा है...",
+    errorOccurred: "कुछ गलत हो गया। कृपया पुनः प्रयास करें।",
+    uploadError: "अपलोड की गई फ़ाइल प्रोसेस करने में विफल।",
   },
   pa: {
     appName: "ਐਗਰੀਗਾਈਡ",
