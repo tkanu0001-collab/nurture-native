@@ -90,6 +90,12 @@ export const translations: Record<Language, Record<string, string>> = {
     cotton: "Cotton",
     sugarcane: "Sugarcane",
     mustard: "Mustard",
+    retake: "Retake",
+    takePhoto: "Take a photo of the affected plant leaf or fruit",
+    noRecords: "No records yet. Analyze your soil first!",
+    thinking: "Thinking...",
+    errorOccurred: "Something went wrong. Please try again.",
+    uploadError: "Failed to process the uploaded file.",
   },
   hi: {
     appName: "एग्रीगाइड",
