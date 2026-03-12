@@ -6,9 +6,11 @@ import { motion } from "framer-motion";
 import { Bug, Upload, Camera, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
+import { useToast } from "@/hooks/use-toast";
 
 export default function PestScanPage() {
   const { t, lang } = useLanguage();
+  const { toast } = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -19,6 +21,7 @@ export default function PestScanPage() {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => setPreview(reader.result as string);
+    reader.onerror = () => toast({ title: t("uploadError"), variant: "destructive" });
     reader.readAsDataURL(file);
     setResult(null);
   };
@@ -29,16 +32,13 @@ export default function PestScanPage() {
     setResult(null);
     try {
       const { data, error } = await supabase.functions.invoke("agri-ai", {
-        body: {
-          type: "pest-scan",
-          image: preview,
-          lang,
-        },
+        body: { type: "pest-scan", image: preview, lang },
       });
       if (error) throw error;
       setResult(data?.result || "No result returned.");
     } catch (err: any) {
-      setResult("Error: " + (err.message || "Something went wrong"));
+      toast({ title: t("errorOccurred"), description: err.message, variant: "destructive" });
+      setResult(null);
     } finally {
       setLoading(false);
     }
@@ -60,7 +60,7 @@ export default function PestScanPage() {
             <Camera className="h-10 w-10 text-destructive" />
           </div>
           <p className="text-muted-foreground font-display text-center text-sm">
-            Take a photo of the affected plant leaf or fruit
+            {t("takePhoto")}
           </p>
           <button onClick={() => fileRef.current?.click()} className="agri-btn-primary">
             <Upload className="h-5 w-5" />
@@ -74,7 +74,7 @@ export default function PestScanPage() {
           </div>
           <div className="flex gap-3">
             <button onClick={() => { setPreview(null); setResult(null); }} className="flex-1 agri-btn bg-secondary text-secondary-foreground">
-              Retake
+              {t("retake")}
             </button>
             <motion.button
               whileTap={{ scale: 0.97 }}

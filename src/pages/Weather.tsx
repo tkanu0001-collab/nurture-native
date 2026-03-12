@@ -1,14 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import PageHeader from "@/components/PageHeader";
 import AppFooter from "@/components/AppFooter";
 import { motion } from "framer-motion";
-import { CloudSun, Thermometer, Droplets, Wind, CloudRain, Loader2 } from "lucide-react";
+import { CloudSun, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
+import { useToast } from "@/hooks/use-toast";
 
 export default function WeatherPage() {
   const { t, lang } = useLanguage();
+  const { toast } = useToast();
   const [location, setLocation] = useState("");
   const [loading, setLoading] = useState(false);
   const [forecast, setForecast] = useState<string | null>(null);
@@ -25,11 +27,15 @@ export default function WeatherPage() {
       if (error) throw error;
       setForecast(data?.result || "No forecast available.");
     } catch (err: any) {
-      setForecast("Error: " + (err.message || "Failed to get forecast"));
+      toast({ title: t("errorOccurred"), description: err.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
+
+  const locationLabel = lang === "hi" ? "स्थान / जिला" : lang === "pa" ? "ਸਥਾਨ / ਜ਼ਿਲ੍ਹਾ" : "Location / District";
+  const locationPlaceholder = lang === "hi" ? "जैसे: लुधियाना, पंजाब" : lang === "pa" ? "ਜਿਵੇਂ: ਲੁਧਿਆਣਾ, ਪੰਜਾਬ" : "e.g. Ludhiana, Punjab";
+  const loadingText = lang === "hi" ? "लोड हो रहा है..." : lang === "pa" ? "ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ..." : "Loading...";
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -37,18 +43,18 @@ export default function WeatherPage() {
 
       <form onSubmit={handleFetch} className="space-y-4 mb-6">
         <div>
-          <label className="agri-label">{lang === "hi" ? "स्थान / जिला" : lang === "pa" ? "ਸਥਾਨ / ਜ਼ਿਲ੍ਹਾ" : "Location / District"}</label>
+          <label className="agri-label">{locationLabel}</label>
           <input
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             className="agri-input"
-            placeholder={lang === "hi" ? "जैसे: लुधियाना, पंजाब" : lang === "pa" ? "ਜਿਵੇਂ: ਲੁਧਿਆਣਾ, ਪੰਜਾਬ" : "e.g. Ludhiana, Punjab"}
+            placeholder={locationPlaceholder}
             required
           />
         </div>
         <motion.button whileTap={{ scale: 0.97 }} type="submit" disabled={loading} className="agri-btn-primary w-full flex items-center justify-center gap-2">
           {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <CloudSun className="h-5 w-5" />}
-          {loading ? (lang === "hi" ? "लोड हो रहा है..." : lang === "pa" ? "ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ..." : "Loading...") : t("weather")}
+          {loading ? loadingText : t("weather")}
         </motion.button>
       </form>
 
