@@ -282,6 +282,12 @@ export const translations: Record<Language, Record<string, string>> = {
     cotton: "ਕਪਾਹ",
     sugarcane: "ਗੰਨਾ",
     mustard: "ਸਰ੍ਹੋਂ",
+    retake: "ਦੁਬਾਰਾ ਲਓ",
+    takePhoto: "ਪ੍ਰਭਾਵਿਤ ਪੌਦੇ ਦੇ ਪੱਤੇ ਜਾਂ ਫਲ ਦੀ ਫੋਟੋ ਲਓ",
+    noRecords: "ਅਜੇ ਕੋਈ ਰਿਕਾਰਡ ਨਹੀਂ। ਪਹਿਲਾਂ ਆਪਣੀ ਮਿੱਟੀ ਦਾ ਵਿਸ਼ਲੇਸ਼ਣ ਕਰੋ!",
+    thinking: "ਸੋਚ ਰਿਹਾ ਹੈ...",
+    errorOccurred: "ਕੁਝ ਗਲਤ ਹੋ ਗਿਆ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+    uploadError: "ਅੱਪਲੋਡ ਕੀਤੀ ਫ਼ਾਈਲ ਨੂੰ ਪ੍ਰੋਸੈਸ ਕਰਨ ਵਿੱਚ ਅਸਫਲ।",
   },
 };
 
